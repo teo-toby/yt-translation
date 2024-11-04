@@ -1,0 +1,48 @@
+service: yt-translation
+
+package:
+  patterns:
+    - '!.git/**'
+    - '!src/**'
+    - '!node_modules/@types/**'
+    - '!node_modules/serverless/**'
+    - '!node_modules/serverless-*/**'
+
+
+provider:
+  name: aws
+  ecr:
+    images:
+      latest:
+        path: ./
+
+  runtime: nodejs20.x
+  memorySize: 512
+  timeout: 900
+  environment:
+    STAGE: ${opt:stage, 'prod'}
+    NODE_ENV: production
+  region: ap-northeast-2
+  stage: ${opt:stage, 'prod'}
+  deploymentBucket:
+    name: yt-translation-lambda-${opt:stage, 'prod'}
+
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - s3:ListBucket
+            - s3:PutObject
+            - s3:GetObject
+            - s3:DeleteObject
+            - lambda:InvokeFunction
+            - secretsmanager:GetSecretValue
+          Resource: "*"
+
+
+functions:
+  main:
+    image:
+      name: latest
+
